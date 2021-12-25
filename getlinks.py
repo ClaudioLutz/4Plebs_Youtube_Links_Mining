@@ -93,11 +93,26 @@ def my_hook(d):
     if d['status'] == 'finished':
         print('Done downloading, now converting ...')
 
+download_songs_folder ='./download_songs/'
+
 ydl_opts = {
-    'format': 'bestaudio/best',       
-    'outtmpl': '%(title)s-%(id)s.%(ext)s',        
-    'noplaylist' : True,        
+    'format':'bestaudio/best',
+    'extractaudio':True,
+    'audioformat':'mp3',
+    'outtmpl': download_songs_folder + '%(title)s-%(id)s.%(ext)s',         #name the file the ID of the video
+    'noplaylist':True,
+    'nocheckcertificate':True,
+    'proxy':"",
     'progress_hooks': [my_hook],  
+    'addmetadata':True,
+    'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        },
+        {
+            'key': 'FFmpegMetadata'
+        }]
 }
 
 for yt_link in complete_yt_set:
