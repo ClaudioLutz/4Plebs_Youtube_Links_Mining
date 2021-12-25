@@ -1,4 +1,5 @@
 # %%
+from __future__ import unicode_literals
 import numpy as np
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
@@ -7,7 +8,7 @@ import pickle
 import os
 from os import listdir
 from os.path import isfile, join
-
+from yt_dlp import YoutubeDL
 
 pickles_folder = './pickles_thread'
 if os.path.exists(pickles_folder) == False:
@@ -73,35 +74,49 @@ for page in range(1,56):
                 with open(yt_file_name, 'rb') as handle:
                     youtube_set = pickle.load(handle)
  
+YT_pickles_folder = './YT_pickles'
 complete_yt_set = set()
 for filename in os.listdir(YT_pickles_folder):
     with open(YT_pickles_folder+'/'+filename, 'rb') as handle:
         complete_yt_set.update(pickle.load(handle))
 
+complete_yt_set = {x for x in complete_yt_set if "playlist" not in x }
+complete_yt_set = {x for x in complete_yt_set if "playlist" not in x }
+complete_yt_set = {x for x in complete_yt_set if "channel" not in x} 
+complete_yt_set = {x for x in complete_yt_set if "index" not in x }
+complete_yt_set = {x for x in complete_yt_set if "start" not in x }
+complete_yt_set = {x for x in complete_yt_set if "search" not in x }
+complete_yt_set = {x for x in complete_yt_set if "list" not in x }
+complete_yt_set = {x for x in complete_yt_set if "feature" not in x }
+
+def my_hook(d):
+    if d['status'] == 'finished':
+        print('Done downloading, now converting ...')
+
+ydl_opts = {
+    'format': 'bestaudio/best',       
+    'outtmpl': '%(title)s-%(id)s.%(ext)s',        
+    'noplaylist' : True,        
+    'progress_hooks': [my_hook],  
+}
+
+for yt_link in complete_yt_set:
+    try:
+        with YoutubeDL(ydl_opts) as ydl:
+            ydl.download([yt_link])
+    except:
+        pass
+
+# %%
+
+#split set in 16 even sized .csv
+
 complete_yt_list = list(complete_yt_set)
-
-print(len(complete_yt_list))
-
-complete_yt_list = [ x for x in complete_yt_list if "playlist" not in x ]
-complete_yt_list = [ x for x in complete_yt_list if "channel" not in x ]
-complete_yt_list = [ x for x in complete_yt_list if "index" not in x ]
-complete_yt_list = [ x for x in complete_yt_list if "start" not in x ]
-complete_yt_list = [ x for x in complete_yt_list if "search" not in x ]
-complete_yt_list = [ x for x in complete_yt_list if "list" not in x ]
-complete_yt_list = [ x for x in complete_yt_list if "feature" not in x ]
 
 complete_yt_list_split = np.array_split(complete_yt_list, 16)
 
 for array in complete_yt_list_split:
     print(list(array))
-
-
-
-print(len(complete_yt_list))
-
-#print(complete_yt_list_split)
-
-# %%
 
 filenr = 1
 
