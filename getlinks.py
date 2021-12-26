@@ -9,6 +9,17 @@ import os
 from os import listdir
 from os.path import isfile, join
 from yt_dlp import YoutubeDL
+from prevent_hibernation import WindowsInhibitor
+
+osSleep = None
+# in Windows, prevent the OS from sleeping while we run
+if os.name == 'nt':
+    osSleep = WindowsInhibitor()
+    osSleep.inhibit()
+
+# do slow stuff
+if osSleep:
+    osSleep.uninhibit()
 
 pickles_folder = './pickles_thread'
 if os.path.exists(pickles_folder) == False:
@@ -121,25 +132,3 @@ for yt_link in complete_yt_set:
             ydl.download([yt_link])
     except:
         pass
-
-# %%
-
-#split set in 16 even sized .csv
-
-complete_yt_list = list(complete_yt_set)
-
-complete_yt_list_split = np.array_split(complete_yt_list, 16)
-
-for array in complete_yt_list_split:
-    print(list(array))
-
-filenr = 1
-
-for array in complete_yt_list_split:
-
-    np.savetxt(youtube_links_folder +"\youtube_links_"+str(filenr)+".csv", 
-           array,
-           delimiter =", ", 
-           fmt ='% s')
-    filenr +=1
-
